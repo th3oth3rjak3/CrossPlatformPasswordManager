@@ -1,0 +1,7 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CrossPlatformPasswordManager.UI.Views.VaultView">
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="Vault Main View Page" FontSize="20" FontWeight="Bold" />
+    </Grid>
+</UserControl>
