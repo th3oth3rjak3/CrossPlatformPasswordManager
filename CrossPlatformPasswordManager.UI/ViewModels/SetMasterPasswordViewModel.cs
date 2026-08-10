@@ -1,12 +1,19 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 using CrossPlatformPasswordManager.Core.Services;
 using CrossPlatformPasswordManager.UI.Services;
+
 using Functional;
 
 namespace CrossPlatformPasswordManager.UI.ViewModels;
 
-public partial class SetMasterPasswordViewModel(MasterPasswordService masterPasswordService, INavigationService navigationService) : ViewModelBase
+public partial class SetMasterPasswordViewModel(
+    MasterPasswordService masterPasswordService,
+    INavigationService navigationService,
+    IdleTimerService idleTimerService,
+    IAuthenticationService authService
+) : ViewModelBase
 {
     [ObservableProperty]
     public partial string MasterPassword { get; set; } = string.Empty;
@@ -36,7 +43,19 @@ public partial class SetMasterPasswordViewModel(MasterPasswordService masterPass
 
         await masterPasswordService.SetMasterPassword(MasterPassword)
             .EffectAsync(
-                navigationService.Navigate<UnlockVaultViewModel>,
+                () =>
+                {
+                    ValidationMessage = authService.Login(MasterPassword);
+
+                    if (!string.IsNullOrWhiteSpace(ValidationMessage))
+                    {
+                        return;
+                    }
+
+                    idleTimerService.StartTimer();
+                    navigationService.NavigateBasedOnVaultSessionState();
+
+                },
                 err => ValidationMessage = err.Message);
     }
 }

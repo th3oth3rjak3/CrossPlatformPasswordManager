@@ -1,5 +1,6 @@
 using CrossPlatformPasswordManager.Core.Context;
 using CrossPlatformPasswordManager.Core.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace CrossPlatformPasswordManager.Core.Services;
@@ -41,7 +42,6 @@ public class MasterPasswordService(
 
                 vaultSession.KeyDerivationSalt = newKeyDerivationSalt;
                 vaultSession.MasterPasswordHash = hash;
-                _ = authService.Login(password);
             }
             catch (Exception)
             {

@@ -1,13 +1,18 @@
-﻿using Avalonia;
+﻿using System.Diagnostics;
+
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+
 using CrossPlatformPasswordManager.Core.Context;
 using CrossPlatformPasswordManager.Core.Models;
 using CrossPlatformPasswordManager.Core.Services;
 using CrossPlatformPasswordManager.UI.Services;
 using CrossPlatformPasswordManager.UI.ViewModels;
 using CrossPlatformPasswordManager.UI.Views;
+
 using Functional;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +32,7 @@ public partial class App : Application
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
         Services = serviceCollection.BuildServiceProvider();
-        
+
         MigrateDatabase(Services);
         var session = LoadVaultSession(Services);
         Services.GetRequiredService<VaultSession>().Effect(state =>
@@ -37,7 +42,8 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var idleTimerService = Services.GetRequiredService<IdleTimerService>();
+            desktop.MainWindow = new MainWindow(idleTimerService)
             {
                 DataContext = Services.GetRequiredService<MainViewModel>()
             };
@@ -60,6 +66,7 @@ public partial class App : Application
         {
             var connectionManager = sp.GetRequiredService<DatabaseConnectionManager>();
             var dbPath = connectionManager.DatabasePath;
+            Debug.WriteLine(dbPath);
             Console.WriteLine(dbPath);
             _ = options.UseSqlite($"Data Source={dbPath}");
         });
@@ -71,7 +78,7 @@ public partial class App : Application
         services.AddTransient<VaultViewModel>();
         services.AddTransient<StartupErrorViewModel>();
     }
-    
+
     private static VaultSession LoadVaultSession(IServiceProvider services)
     {
         var dbContextFactory = services.GetRequiredService<IDbContextFactory<PasswordManagerContext>>();

@@ -1,6 +1,7 @@
 using CrossPlatformPasswordManager.Core.Models;
 using CrossPlatformPasswordManager.Core.Services;
 using CrossPlatformPasswordManager.UI.ViewModels;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CrossPlatformPasswordManager.UI.Services;
@@ -16,7 +17,7 @@ public sealed class NavigationService(IServiceProvider serviceProvider, IAuthent
         NavigationRequested?.Invoke(viewModel);
     }
 
-    public void NavigateHome()
+    public void NavigateBasedOnVaultSessionState()
     {
         var state = authService.GetCurrentState();
 

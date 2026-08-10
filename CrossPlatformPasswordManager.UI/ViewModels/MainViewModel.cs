@@ -37,7 +37,7 @@ public partial class MainViewModel : ViewModelBase
         {
             var init = await _authService.ReloadAllAuthState();
             init.Unwrap();
-            _navigationService.NavigateHome();
+            _navigationService.NavigateBasedOnVaultSessionState();
         }
         catch (Exception ex)
         {
