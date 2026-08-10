@@ -114,7 +114,12 @@ public partial class VaultEntriesViewModel : ViewModelBase
             return;
 
         // Create delete confirmation dialog
-        var dialog = new ConfirmDeleteViewModel(item.SiteName);
+        var dialog = new ConfirmDialogViewModel(
+            title: "Delete Password Entry?",
+            message: $"Are you sure you want to delete '{item.SiteName}'? This action cannot be undone.",
+            confirmButtonText: "Delete",
+            severity: ConfirmDialogSeverity.Danger
+        );
 
         dialog.CloseRequested += async (confirmed) =>
         {

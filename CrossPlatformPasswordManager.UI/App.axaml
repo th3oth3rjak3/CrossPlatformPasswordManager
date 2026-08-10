@@ -36,8 +36,8 @@
             <views:PasswordEditorView />
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type vm:ConfirmDeleteViewModel}">
-            <views:ConfirmDeleteView />
+        <DataTemplate DataType="{x:Type vm:ConfirmDialogViewModel}">
+            <views:ConfirmDialogView />
         </DataTemplate>
 
     </Application.DataTemplates>

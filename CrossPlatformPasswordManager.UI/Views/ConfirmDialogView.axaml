@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
-             x:Class="CrossPlatformPasswordManager.UI.Views.ConfirmDeleteView"
-             x:DataType="vm:ConfirmDeleteViewModel">
+             x:Class="CrossPlatformPasswordManager.UI.Views.ConfirmDialogView"
+             x:DataType="vm:ConfirmDialogViewModel">
 
-    <!-- Semi Card Confirmation Dialog Box -->
-    <Border Width="380"
+    <!-- Reusable Semi Confirmation Dialog Box -->
+    <Border Width="400"
             Padding="24"
             CornerRadius="12"
             Theme="{StaticResource CardBorder}"
@@ -13,29 +13,31 @@
 
         <StackPanel Spacing="16">
             
-            <TextBlock Text="Delete Password Entry?"
+            <TextBlock Text="{Binding Title}"
                        FontSize="18"
                        FontWeight="Bold" />
 
-            <TextBlock TextWrapping="Wrap" FontSize="13">
-                <Run Text="Are you sure you want to delete the entry for " />
-                <Run Text="{Binding SiteName}" FontWeight="Bold" />
-                <Run Text="? This action cannot be undone." />
-            </TextBlock>
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       FontSize="13" />
 
             <!-- Dialog Action Buttons -->
             <Grid ColumnDefinitions="*, *" Margin="0,8,0,0">
                 <Button Grid.Column="0"
-                        Content="Cancel"
+                        Content="{Binding CancelButtonText}"
                         Classes="Tertiary"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         Command="{Binding CancelCommand}"
                         Margin="0,0,6,0" />
 
+                <!-- Dynamic Class Toggles for Danger / Warning / Primary -->
                 <Button Grid.Column="1"
-                        Content="Delete"
-                        Classes="Danger Solid"
+                        Content="{Binding ConfirmButtonText}"
+                        Classes="Solid"
+                        Classes.Danger="{Binding IsDanger}"
+                        Classes.Warning="{Binding IsWarning}"
+                        Classes.Primary="{Binding IsPrimary}"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         Command="{Binding ConfirmCommand}"
