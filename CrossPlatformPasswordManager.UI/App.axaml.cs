@@ -48,5 +48,6 @@ public partial class App : Application
         services.AddTransient<SetMasterPasswordViewModel>();
         services.AddTransient<UnlockVaultViewModel>();
         services.AddTransient<VaultViewModel>();
+        services.AddTransient<StartupErrorViewModel>();
     }
 }

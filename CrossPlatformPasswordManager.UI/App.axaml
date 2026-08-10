@@ -16,6 +16,9 @@
         <DataTemplate DataType="{x:Type vm:VaultViewModel}">
             <views:VaultView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StartupErrorViewModel}">
+            <views:StartupErrorView />
+        </DataTemplate>
     </Application.DataTemplates>
 
     <Application.Styles>

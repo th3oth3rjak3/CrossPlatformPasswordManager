@@ -12,11 +12,11 @@ public partial class MainWindow : Window
         Opened += OnWindowOpened;
     }
 
-    private async void OnWindowOpened(object? sender, EventArgs e)
+    private void OnWindowOpened(object? sender, EventArgs e)
     {
         if (DataContext is MainViewModel mainViewModel)
         {
-            await mainViewModel.EvaluateAndNavigateAsync();
+            mainViewModel.EvaluateAndNavigateCommand.Execute(null);
         }
     }
 }

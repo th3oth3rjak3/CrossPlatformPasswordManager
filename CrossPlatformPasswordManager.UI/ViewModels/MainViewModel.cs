@@ -1,15 +1,17 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 using CrossPlatformPasswordManager.Core.Models;
 using CrossPlatformPasswordManager.Core.Services;
 
 namespace CrossPlatformPasswordManager.UI.ViewModels;
 
-public class MainViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase
 {
     private readonly IAuthenticationService _authService;
 
-    public ViewModelBase? CurrentPage { get; set => SetProperty(ref field, value); }
+    [ObservableProperty]
+    public partial ViewModelBase? CurrentPage { get; set; }
 
     public IAsyncRelayCommand EvaluateAndNavigateCommand { get; }
 
@@ -22,16 +24,32 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Evaluates the current authentication state and updates the visible active page ViewModel.
     /// </summary>
-    public async Task EvaluateAndNavigateAsync()
+    private async Task EvaluateAndNavigateAsync()
     {
-        var state = await _authService.GetCurrentStateAsync();
-
-        CurrentPage = state switch
+        try
         {
-            AuthenticationState.SetMasterPasswordRequired => new SetMasterPasswordViewModel(),
-            AuthenticationState.UnlockRequired => new UnlockVaultViewModel(),
-            AuthenticationState.Authenticated => new VaultViewModel(),
-            _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unsupported authentication state.")
-        };
+            var state = await _authService.GetCurrentStateAsync();
+
+            CurrentPage = state switch
+            {
+                AuthenticationState.SetMasterPasswordRequired =>
+                    new SetMasterPasswordViewModel(),
+
+                AuthenticationState.UnlockRequired =>
+                    new UnlockVaultViewModel(),
+
+                AuthenticationState.Authenticated =>
+                    new VaultViewModel(),
+
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(state),
+                    state,
+                    "Unsupported authentication state.")
+            };
+        }
+        catch (Exception ex)
+        {
+            CurrentPage = new StartupErrorViewModel(ex);
+        }
     }
 }
