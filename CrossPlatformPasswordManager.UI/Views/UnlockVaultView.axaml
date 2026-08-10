@@ -1,7 +1,62 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="CrossPlatformPasswordManager.UI.Views.UnlockVaultView">
-    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="Unlock Vault Page" FontSize="20" FontWeight="Bold" />
+             xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
+             x:Class="CrossPlatformPasswordManager.UI.Views.UnlockVaultView"
+             x:DataType="vm:UnlockVaultViewModel">
+    <Grid
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center">
+
+        <Border
+            MinWidth="400"
+            MaxWidth="500"
+            Padding="40"
+            Background="{DynamicResource SurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10">
+
+            <StackPanel Spacing="20">
+
+                <StackPanel Spacing="6">
+                    <TextBlock
+                        Text="Unlock your vault"
+                        FontSize="26"
+                        FontWeight="SemiBold"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Classes="secondary"
+                        Text="Enter your master password to unlock your vault."
+                        FontSize="14"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Spacing="8">
+                    <TextBlock
+                        Text="Master Password"
+                        FontWeight="SemiBold" />
+
+                    <TextBox
+                        PasswordChar="●"
+                        PlaceholderText="Enter your master password"
+                        Text="{Binding MasterPassword}" />
+                </StackPanel>
+
+                <TextBlock
+                    Classes="error"
+                    Text="{Binding ValidationMessage}"
+                    TextWrapping="Wrap" />
+
+                <Button
+                    Classes="primary"
+                    Content="Unlock Vault"
+                    Command="{Binding UnlockVaultCommand}" />
+
+            </StackPanel>
+
+        </Border>
+
     </Grid>
+
 </UserControl>

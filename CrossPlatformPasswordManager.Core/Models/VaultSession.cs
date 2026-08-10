@@ -36,4 +36,12 @@ public class VaultSession
         MasterPasswordHash = string.Empty;
         KeyDerivationSalt = string.Empty;
     }
+    
+    public void CopyFrom(VaultSession other)
+    {
+        IsLoggedIn = other.IsLoggedIn;
+        MasterPasswordHash = other.MasterPasswordHash;
+        KeyDerivationSalt = other.KeyDerivationSalt;
+        _aesEncryptionKey = other._aesEncryptionKey;
+    }
 }

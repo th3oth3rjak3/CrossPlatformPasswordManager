@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
-using CrossPlatformPasswordManager.Core.Models;
 using CrossPlatformPasswordManager.Core.Services;
+using CrossPlatformPasswordManager.UI.Services;
 
 namespace CrossPlatformPasswordManager.UI.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
+    private readonly INavigationService _navigationService;
     private readonly IAuthenticationService _authService;
 
     [ObservableProperty]
@@ -15,10 +15,17 @@ public partial class MainViewModel : ViewModelBase
 
     public IAsyncRelayCommand EvaluateAndNavigateCommand { get; }
 
-    public MainViewModel(IAuthenticationService authService)
+    public MainViewModel(IAuthenticationService authService, INavigationService navigationService)
     {
         _authService = authService;
+        _navigationService = navigationService;
+        _navigationService.NavigationRequested += OnNavigationRequested;
         EvaluateAndNavigateCommand = new AsyncRelayCommand(EvaluateAndNavigateAsync);
+    }
+    
+    private void OnNavigationRequested(ViewModelBase viewModel)
+    {
+        CurrentPage = viewModel;
     }
 
     /// <summary>
@@ -28,24 +35,9 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            var state = await _authService.GetCurrentStateAsync();
-
-            CurrentPage = state switch
-            {
-                AuthenticationState.SetMasterPasswordRequired =>
-                    new SetMasterPasswordViewModel(),
-
-                AuthenticationState.UnlockRequired =>
-                    new UnlockVaultViewModel(),
-
-                AuthenticationState.Authenticated =>
-                    new VaultViewModel(),
-
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(state),
-                    state,
-                    "Unsupported authentication state.")
-            };
+            var init = await _authService.ReloadAllAuthState();
+            init.Unwrap();
+            _navigationService.NavigateHome();
         }
         catch (Exception ex)
         {

@@ -1,45 +1,55 @@
-﻿using CrossPlatformPasswordManager.Core.Models;
+﻿using System.Security.Cryptography;
+using CrossPlatformPasswordManager.Core.Context;
+using CrossPlatformPasswordManager.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CrossPlatformPasswordManager.Core.Services;
 
-public class AuthenticationService(VaultSession session) : IAuthenticationService
+public class AuthenticationService(
+    VaultSession vaultSession,
+    IdleTimerService idleTimer,
+    IDbContextFactory<PasswordManagerContext> contextFactory
+) : IAuthenticationService
 {
-    public Task<AuthenticationState> GetCurrentStateAsync()
+    public AuthenticationState GetCurrentState()
     {
-        if (!session.IsMasterPasswordSet)
+        if (!vaultSession.IsMasterPasswordSet) return AuthenticationState.SetMasterPasswordRequired;
+        return vaultSession.IsLoggedIn ? AuthenticationState.Authenticated : AuthenticationState.UnlockRequired;
+    }
+    
+    public async Task<Result<Unit, Exception>> ReloadAllAuthState() =>
+        await TryAsync(() =>
         {
-            return Task.FromResult(AuthenticationState.SetMasterPasswordRequired);
+            using var context = contextFactory.CreateDbContext();
+            var masterPw = context.MasterPasswords.First();
+            vaultSession.MasterPasswordHash = masterPw.PasswordHash;
+            vaultSession.AesEncryptionKey = new byte[16];
+            vaultSession.KeyDerivationSalt = masterPw.KeyDerivationSalt;
+            vaultSession.IsLoggedIn = false;
+        });
+
+    public string? Login(string masterPassword)
+    {
+        string? errorMessage = null;
+        if (Crypto.VerifyMasterPassword(masterPassword, vaultSession.MasterPasswordHash))
+        {
+            vaultSession.AesEncryptionKey = Crypto.DeriveAesKey(masterPassword, vaultSession.KeyDerivationSalt);
+            vaultSession.IsLoggedIn = true;
+            idleTimer.StartTimer();
+        }
+        else
+        {
+            errorMessage = "Invalid password, please try again.";
         }
 
-        if (!session.IsLoggedIn)
-        {
-            return Task.FromResult(AuthenticationState.UnlockRequired);
-        }
-
-        return Task.FromResult(AuthenticationState.Authenticated);
+        return errorMessage;
     }
 
-    public Task<bool> IsMasterPasswordSetAsync() => Task.FromResult(session.IsMasterPasswordSet);
-
-    public bool IsVaultUnlocked() => session.IsLoggedIn;
-
-    public Task SetMasterPasswordAsync(string password)
+    public void Logout()
     {
-        // TODO: Hash password using Argon2/PBKDF2 and save salt + hash to SQLite
-        session.MasterPasswordHash = "dummy_hash"; // Placeholder until SQLite is linked
-        session.IsLoggedIn = true;
-        return Task.CompletedTask;
-    }
-
-    public Task<bool> UnlockVaultAsync(string password)
-    {
-        // TODO: Validate entered password against stored SQLite hash
-        session.IsLoggedIn = true;
-        return Task.FromResult(true);
-    }
-
-    public void LockVault()
-    {
-        session.ClearSensitiveData();
+        CryptographicOperations.ZeroMemory(vaultSession.AesEncryptionKey);
+        vaultSession.AesEncryptionKey = new byte[16];
+        vaultSession.IsLoggedIn = false;
+        idleTimer.StopTimer();
     }
 }
