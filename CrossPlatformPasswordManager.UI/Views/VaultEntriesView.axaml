@@ -4,86 +4,126 @@
              x:Class="CrossPlatformPasswordManager.UI.Views.VaultEntriesView"
              x:DataType="vm:VaultEntriesViewModel">
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid>
+        <!-- Main Content Area (Search Bar + DataGrid) -->
+        <Grid RowDefinitions="Auto, *">
 
-        <!-- Search & Add Bar -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,16">
-    
-            <!-- Search Bar with Fixed Width -->
-            <TextBox Grid.Column="0"
-                     Width="320"
-                     PlaceholderText="🔍 Search passwords..."
-                     Text="{Binding SearchQuery, Mode=TwoWay}"
-                     HorizontalAlignment="Left" />
+            <!-- Search & Add Bar -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,16">
+                <TextBox Grid.Column="0"
+                         Classes="clearButton"
+                         Width="320"
+                         PlaceholderText="🔍 Search passwords..."
+                         Text="{Binding SearchQuery, Mode=TwoWay}"
+                         HorizontalAlignment="Left" />
 
-            <!-- Add Password Button -->
-            <Button Grid.Column="2"
-                    Content="➕ Add Password"
-                    Classes="Primary Solid"
-                    Command="{Binding AddPasswordCommand}" />
-        </Grid>
+                <Button Grid.Column="2"
+                        Content="➕ Add Password"
+                        Classes="Primary Solid"
+                        Command="{Binding AddPasswordCommand}" />
+            </Grid>
 
-        <!-- Passwords DataGrid -->
-        <DataGrid Grid.Row="1"
-                  ItemsSource="{Binding FilteredEntries}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  GridLinesVisibility="Horizontal">
+            <!-- DataGrid with Row ContextMenu -->
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding FilteredEntries}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      RowHeight="44"
+                      GridLinesVisibility="All">
 
-            <DataGrid.Columns>
-                <!-- Site Name Column -->
-                <DataGridTextColumn Header="Site / App" 
-                                    Binding="{Binding SiteName}" 
-                                    Width="1.5*" />
+                <!-- Right-Click Context Menu for Rows -->
+                <DataGrid.Styles>
+                    <Style Selector="DataGridRow">
+                        <Setter Property="ContextMenu">
+                            <ContextMenu x:DataType="vm:PasswordEntryDisplayItem">
+                                <MenuItem Header="👤 Copy Username"
+                                          Command="{Binding CopyUsernameCommand}" />
 
-                <!-- Username Column -->
-                <DataGridTextColumn Header="Username" 
-                                    Binding="{Binding Username}" 
-                                    Width="2*" />
+                                <MenuItem Header="📋 Copy Password"
+                                          Command="{Binding CopyPasswordCommand}" />
+                
+                                <MenuItem Header="👁 Toggle Show / Hide Password"
+                                          Command="{Binding ToggleShowPasswordCommand}" />
 
-                <!-- Password Column with Inline Actions -->
-                <DataGridTemplateColumn Header="Password" Width="2*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Separator />
+
+                                <MenuItem Header="✏️ Edit Entry"
+                                          Command="{Binding EditCommand}" />
+
+                                <MenuItem Header="🗑️ Delete Entry"
+                                          Foreground="{DynamicResource SemiColorDanger}"
+                                          Command="{Binding DeleteCommand}" />
+                            </ContextMenu>
+                        </Setter>
+                    </Style>
+                </DataGrid.Styles>
+
+                <DataGrid.Columns>
+                    <!-- Site Column -->
+                    <DataGridTextColumn Header="Site / App" 
+                                        Binding="{Binding SiteName}" 
+                                        Width="1.5*" />
+
+                    <!-- Username Column -->
+                    <DataGridTextColumn Header="Username" 
+                                        Binding="{Binding Username}" 
+                                        Width="2*" />
+
+                    <!-- Password Text Column -->
+                    <DataGridTemplateColumn Header="Password" Width="2*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
                                 <TextBlock Text="{Binding DisplayPassword}" 
                                            VerticalAlignment="Center" 
-                                           FontFamily="Consolas, Monospace" />
+                                           FontFamily="Consolas, Monospace" 
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="12,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
-                                <Button Content="👁"
-                                        Classes="Tertiary"
-                                        Padding="4,2"
-                                        Command="{Binding ToggleShowPasswordCommand}" />
+                    <!-- Dedicated Action Buttons Column -->
+                    <DataGridTemplateColumn Width="Auto">
+                        <!-- Centered Header Template -->
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="Actions" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Button Content="👁"
+                                            Classes="Tertiary"
+                                            Padding="6,4"
+                                            ToolTip.Tip="Toggle Show/Hide"
+                                            Command="{Binding ToggleShowPasswordCommand}" />
 
-                                <Button Content="📋"
-                                        Classes="Tertiary"
-                                        Padding="4,2"
-                                        Command="{Binding CopyPasswordCommand}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                                    <Button Content="📋"
+                                            Classes="Tertiary"
+                                            Padding="6,4"
+                                            ToolTip.Tip="Copy Password"
+                                            Command="{Binding CopyPasswordCommand}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
 
-                <!-- Actions Column -->
-                <DataGridTemplateColumn Header="Actions" Width="Auto">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <Button Content="✏️ Edit"
-                                        Classes="Tertiary"
-                                        Command="{Binding $parent[UserControl].((vm:VaultEntriesViewModel)DataContext).EditPasswordCommand}"
-                                        CommandParameter="{Binding}" />
+        </Grid>
 
-                                <Button Content="🗑️ Delete"
-                                        Classes="Danger Tertiary"
-                                        Command="{Binding $parent[UserControl].((vm:VaultEntriesViewModel)DataContext).DeletePasswordCommand}"
-                                        CommandParameter="{Binding}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+        <!-- Modal Overlay Layer -->
+        <Grid Background="#80000000"
+              IsVisible="{Binding ActiveEditor, Converter={x:Static ObjectConverters.IsNotNull}}"
+              IsHitTestVisible="{Binding ActiveEditor, Converter={x:Static ObjectConverters.IsNotNull}}"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+
+            <ContentControl Content="{Binding ActiveEditor}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+        </Grid>
 
     </Grid>
 </UserControl>

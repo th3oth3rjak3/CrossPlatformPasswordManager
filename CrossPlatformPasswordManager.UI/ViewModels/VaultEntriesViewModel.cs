@@ -3,10 +3,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using CrossPlatformPasswordManager.Core.Models;
+using CrossPlatformPasswordManager.Core.Services;
+
+using Functional;
+
 namespace CrossPlatformPasswordManager.UI.ViewModels;
 
 public partial class VaultEntriesViewModel : ViewModelBase
 {
+    private readonly PasswordEntryService _passwordEntryService;
     private readonly ObservableCollection<PasswordEntryDisplayItem> _allEntries = [];
 
     [ObservableProperty]
@@ -15,27 +21,123 @@ public partial class VaultEntriesViewModel : ViewModelBase
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial ViewModelBase? ActiveEditor { get; set; }
+
+    public IAsyncRelayCommand LoadEntriesCommand { get; }
     public IRelayCommand AddPasswordCommand { get; }
-    public IRelayCommand<PasswordEntryDisplayItem> EditPasswordCommand { get; }
-    public IRelayCommand<PasswordEntryDisplayItem> DeletePasswordCommand { get; }
 
-    public VaultEntriesViewModel()
+    public VaultEntriesViewModel(PasswordEntryService passwordEntryService)
     {
+        _passwordEntryService = passwordEntryService;
+
+        LoadEntriesCommand = new AsyncRelayCommand(LoadEntriesAsync);
         AddPasswordCommand = new RelayCommand(AddPassword);
-        EditPasswordCommand = new RelayCommand<PasswordEntryDisplayItem>(EditPassword);
-        DeletePasswordCommand = new RelayCommand<PasswordEntryDisplayItem>(DeletePassword);
 
-        FilterEntries();
+        _ = LoadEntriesAsync();
     }
 
-    /// <summary>
-    /// Used by Avalonia when setting SearchQuery. This allows us to hook into the setter and filter our entries list.
-    /// </summary>
-    /// <param name="value">The value of the search query.</param>
-    partial void OnSearchQueryChanged(string value)
+    public async Task LoadEntriesAsync()
     {
-        FilterEntries();
+        await _passwordEntryService
+            .GetAllPasswordEntriesAsync()
+            .EffectOkAsync(entries =>
+            {
+                _allEntries.Clear();
+                foreach (var dto in entries)
+                {
+                    _allEntries.Add(new PasswordEntryDisplayItem(
+                        dto.Id,
+                        dto.Site,
+                        dto.Username,
+                        dto.Password,
+                        onEdit: EditPassword,
+                        onDelete: (item) => _ = DeletePasswordAsync(item)
+                    ));
+                }
+                FilterEntries();
+            });
     }
+
+    private void AddPassword()
+    {
+        var editor = new PasswordEditorViewModel();
+
+        editor.SaveRequested += async (writeDto) =>
+        {
+            if (writeDto != null)
+            {
+                await _passwordEntryService
+                    .CreatePasswordEntryAsync(writeDto)
+                    .EffectAsync(async _ => await LoadEntriesAsync());
+            }
+
+            ActiveEditor = null;
+        };
+
+        ActiveEditor = editor;
+    }
+
+    private void EditPassword(PasswordEntryDisplayItem? item)
+    {
+        if (item == null)
+            return;
+
+        var readDto = new PasswordEntryReadDto
+        {
+            Id = item.Id,
+            Site = item.SiteName,
+            Username = item.Username,
+            Password = item.PlaintextPassword
+        };
+
+        var editor = new PasswordEditorViewModel(readDto);
+
+        editor.SaveRequested += async (writeDto) =>
+        {
+            if (writeDto != null)
+            {
+                await _passwordEntryService
+                    .UpdatePasswordEntryAsync(item.Id, writeDto)
+                    .EffectAsync(async _ => await LoadEntriesAsync());
+            }
+
+            ActiveEditor = null;
+        };
+
+        ActiveEditor = editor;
+    }
+
+    private async Task DeletePasswordAsync(PasswordEntryDisplayItem? item)
+    {
+        if (item == null)
+            return;
+
+        // Create delete confirmation dialog
+        var dialog = new ConfirmDeleteViewModel(item.SiteName);
+
+        dialog.CloseRequested += async (confirmed) =>
+        {
+            if (confirmed)
+            {
+                await _passwordEntryService
+                    .DeletePasswordEntryAsync(item.Id)
+                    .EffectAsync(async _ =>
+                    {
+                        _allEntries.Remove(item);
+                        FilterEntries();
+                        await Task.CompletedTask;
+                    });
+            }
+
+            ActiveEditor = null;
+        };
+
+        // Open confirmation overlay
+        ActiveEditor = dialog;
+    }
+
+    partial void OnSearchQueryChanged(string value) => FilterEntries();
 
     private void FilterEntries()
     {
@@ -51,25 +153,5 @@ public partial class VaultEntriesViewModel : ViewModelBase
 
             FilteredEntries = new ObservableCollection<PasswordEntryDisplayItem>(filtered);
         }
-    }
-
-    private void AddPassword()
-    {
-        // Open modal/dialog to create a new password entry
-    }
-
-    private void EditPassword(PasswordEntryDisplayItem? item)
-    {
-        if (item == null)
-            return;
-        // Open modal/dialog to edit the selected password entry
-    }
-
-    private void DeletePassword(PasswordEntryDisplayItem? item)
-    {
-        if (item == null)
-            return;
-        _allEntries.Remove(item);
-        FilterEntries();
     }
 }

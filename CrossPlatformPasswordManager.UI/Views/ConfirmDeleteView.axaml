@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
+             x:Class="CrossPlatformPasswordManager.UI.Views.ConfirmDeleteView"
+             x:DataType="vm:ConfirmDeleteViewModel">
+
+    <!-- Semi Card Confirmation Dialog Box -->
+    <Border Width="380"
+            Padding="24"
+            CornerRadius="12"
+            Theme="{StaticResource CardBorder}"
+            Background="{DynamicResource SystemAltHighColor}">
+
+        <StackPanel Spacing="16">
+            
+            <TextBlock Text="Delete Password Entry?"
+                       FontSize="18"
+                       FontWeight="Bold" />
+
+            <TextBlock TextWrapping="Wrap" FontSize="13">
+                <Run Text="Are you sure you want to delete the entry for " />
+                <Run Text="{Binding SiteName}" FontWeight="Bold" />
+                <Run Text="? This action cannot be undone." />
+            </TextBlock>
+
+            <!-- Dialog Action Buttons -->
+            <Grid ColumnDefinitions="*, *" Margin="0,8,0,0">
+                <Button Grid.Column="0"
+                        Content="Cancel"
+                        Classes="Tertiary"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Command="{Binding CancelCommand}"
+                        Margin="0,0,6,0" />
+
+                <Button Grid.Column="1"
+                        Content="Delete"
+                        Classes="Danger Solid"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Command="{Binding ConfirmCommand}"
+                        Margin="6,0,0,0" />
+            </Grid>
+
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,5 +1,6 @@
 using CrossPlatformPasswordManager.Core.Context;
 using CrossPlatformPasswordManager.Core.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace CrossPlatformPasswordManager.Core.Services;
@@ -77,19 +78,19 @@ public class PasswordEntryService(IDbContextFactory<PasswordManagerContext> cont
         });
 
     public async Task<Result<List<PasswordEntryReadDto>, Exception>> GetAllPasswordEntriesAsync() =>
-    await TryAsync(async () =>
-    {
-        await using var context = await contextFactory.CreateDbContextAsync();
-        var allEntries = await context.PasswordEntries.ToListAsync();
-        return allEntries
-            .Select(entry =>
-                new PasswordEntryReadDto
-                {
-                    Id = entry.Id,
-                    Site = entry.SiteName,
-                    Username = entry.Username,
-                    Password = Crypto.DecryptEntry(authState.AesEncryptionKey, entry.PasswordHash),
-                })
-            .ToList();
-    });
+        await TryAsync(async () =>
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            var allEntries = await context.PasswordEntries.ToListAsync();
+            return allEntries
+                .Select(entry =>
+                    new PasswordEntryReadDto
+                    {
+                        Id = entry.Id,
+                        Site = entry.SiteName,
+                        Username = entry.Username,
+                        Password = Crypto.DecryptEntry(authState.AesEncryptionKey, entry.PasswordHash),
+                    })
+                .ToList();
+        });
 }

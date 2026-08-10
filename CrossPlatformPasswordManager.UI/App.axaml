@@ -31,6 +31,15 @@
         <DataTemplate DataType="{x:Type vm:StartupErrorViewModel}">
             <views:StartupErrorView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:PasswordEditorViewModel}">
+            <views:PasswordEditorView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:ConfirmDeleteViewModel}">
+            <views:ConfirmDeleteView />
+        </DataTemplate>
+
     </Application.DataTemplates>
 
     <Application.Styles>
