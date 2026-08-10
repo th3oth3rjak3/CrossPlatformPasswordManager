@@ -23,7 +23,7 @@ public class AuthenticationService(
         await TryAsync(() =>
         {
             using var context = contextFactory.CreateDbContext();
-            var masterPw = context.MasterPasswords.First();
+            var masterPw = context.MasterPasswords.OrderBy(x => x.Id).First();
             vaultSession.MasterPasswordHash = masterPw.PasswordHash;
             vaultSession.AesEncryptionKey = new byte[16];
             vaultSession.KeyDerivationSalt = masterPw.KeyDerivationSalt;

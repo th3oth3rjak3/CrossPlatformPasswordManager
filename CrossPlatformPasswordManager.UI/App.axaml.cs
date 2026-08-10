@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -15,6 +13,9 @@ using Functional;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Serilog;
 
 namespace CrossPlatformPasswordManager.UI;
 
@@ -27,50 +28,33 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    //public override void OnFrameworkInitializationCompleted()
-    //{
-    //    var serviceCollection = new ServiceCollection();
-    //    ConfigureServices(serviceCollection);
-    //    Services = serviceCollection.BuildServiceProvider();
-
-    //    MigrateDatabase(Services);
-    //    var session = LoadVaultSession(Services);
-    //    Services.GetRequiredService<VaultSession>().Effect(state =>
-    //    {
-    //        state.CopyFrom(session);
-    //    });
-
-    //    if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-    //    {
-    //        desktop.MainWindow = new MainWindow
-    //        {
-    //            DataContext = Services.GetRequiredService<MainViewModel>()
-    //        };
-    //    }
-
-    //    base.OnFrameworkInitializationCompleted();
-    //}
-
     public override void OnFrameworkInitializationCompleted()
     {
+        var serviceCollection = new ServiceCollection();
+        ConfigureServices(serviceCollection);
+        Services = serviceCollection.BuildServiceProvider();
+
+        // Logger for initial startup information.
+        var logger = Services.GetRequiredService<ILogger<App>>();
+
         try
         {
-            Debug.WriteLine("[STARTUP] 1. Initializing DI Services...");
-            var serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
-            Services = serviceCollection.BuildServiceProvider();
+            logger.LogInformation("=========================================");
+            logger.LogInformation(" Starting CrossPlatformPasswordManager");
+            logger.LogInformation(" Application Data Path: {Path}", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PasswordManager"));
+            logger.LogInformation("=========================================");
 
-            Debug.WriteLine("[STARTUP] 2. Migrating Database...");
+            logger.LogInformation("[STARTUP] 1. Migrating Database...");
             MigrateDatabase(Services);
 
-            Debug.WriteLine("[STARTUP] 3. Loading Vault Session...");
+            logger.LogInformation("[STARTUP] 2. Loading Vault Session...");
             var session = LoadVaultSession(Services);
             Services.GetRequiredService<VaultSession>().Effect(state =>
             {
                 state.CopyFrom(session);
             });
 
-            Debug.WriteLine("[STARTUP] 4. Resolving MainViewModel...");
+            logger.LogInformation("[STARTUP] 3. Resolving MainViewModel...");
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow
@@ -79,18 +63,43 @@ public partial class App : Application
                 };
             }
 
-            Debug.WriteLine("[STARTUP] 5. Initialization Complete!");
+            logger.LogInformation("[STARTUP] 4. Initialization Complete!");
             base.OnFrameworkInitializationCompleted();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[CRITICAL STARTUP ERROR] {ex}");
+            logger.LogError($"[CRITICAL STARTUP ERROR] {ex}");
             throw;
         }
     }
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        // Determine path to Application Data logs directory
+        var appDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "PasswordManager",
+            "logs"
+        );
+        Directory.CreateDirectory(appDataFolder);
+
+        var logFilePath = Path.Combine(appDataFolder, "app-.log");
+
+        // Configure Serilog to write to Daily Rolling Files & Terminal
+        var serilogLogger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
+            .WriteTo.Console()
+            .WriteTo.Debug()
+            .CreateLogger();
+
+        // Logging Configuration for Terminal (stdout/stderr)
+        services.AddLogging(loggingBuilder =>
+        {
+            loggingBuilder.ClearProviders();
+            loggingBuilder.AddSerilog(serilogLogger);
+        });
+
         // Core State & Services
         services.AddSingleton<VaultSession>();
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
@@ -103,8 +112,6 @@ public partial class App : Application
         {
             var connectionManager = sp.GetRequiredService<DatabaseConnectionManager>();
             var dbPath = connectionManager.DatabasePath;
-            Debug.WriteLine(dbPath);
-            Console.WriteLine(dbPath);
             _ = options.UseSqlite($"Data Source={dbPath}");
         });
 
@@ -122,7 +129,7 @@ public partial class App : Application
     {
         var dbContextFactory = services.GetRequiredService<IDbContextFactory<PasswordManagerContext>>();
         using var context = dbContextFactory.CreateDbContext();
-        var masterPw = context.MasterPasswords.First();
+        var masterPw = context.MasterPasswords.OrderBy(x => x.Id).First();
         return new VaultSession
         {
             IsLoggedIn = false,

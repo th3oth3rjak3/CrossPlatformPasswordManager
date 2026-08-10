@@ -32,6 +32,7 @@
                                FontSize="13" />
 
                     <TextBox PasswordChar="●"
+                             Classes="clearButton"
                              PlaceholderText="Enter your master password"
                              Text="{Binding MasterPassword}" />
                 </StackPanel>
