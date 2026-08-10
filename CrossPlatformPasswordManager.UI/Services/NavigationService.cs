@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CrossPlatformPasswordManager.UI.Services;
 
-public sealed class NavigationService(IServiceProvider serviceProvider, IAuthenticationService authService)
+public sealed class NavigationService(IServiceProvider serviceProvider, IAuthenticationService authService, IdleTimerService idleTimerService)
     : INavigationService
 {
     public event Action<ViewModelBase>? NavigationRequested;
@@ -24,14 +24,17 @@ public sealed class NavigationService(IServiceProvider serviceProvider, IAuthent
         switch (state)
         {
             case AuthenticationState.SetMasterPasswordRequired:
+                idleTimerService.StopTimer();
                 Navigate<SetMasterPasswordViewModel>();
                 break;
 
             case AuthenticationState.UnlockRequired:
+                idleTimerService.StopTimer();
                 Navigate<UnlockVaultViewModel>();
                 break;
 
             case AuthenticationState.Authenticated:
+                idleTimerService.StartTimer();
                 Navigate<VaultViewModel>();
                 break;
 

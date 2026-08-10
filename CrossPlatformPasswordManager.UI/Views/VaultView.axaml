@@ -1,7 +1,59 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="CrossPlatformPasswordManager.UI.Views.VaultView">
-    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="Vault Main View Page" FontSize="20" FontWeight="Bold" />
-    </Grid>
+             xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
+             x:Class="CrossPlatformPasswordManager.UI.Views.VaultView"
+             x:DataType="vm:VaultViewModel">
+
+    <SplitView IsPaneOpen="True" DisplayMode="Inline" OpenPaneLength="220">
+        <!-- Left Sidebar Navigation Pane -->
+        <SplitView.Pane>
+            <Grid RowDefinitions="Auto, *, Auto"
+                  Background="{DynamicResource SystemAltHighColor}">
+                
+                <!-- Sidebar Header -->
+                <TextBlock Grid.Row="0"
+                           Text="Vault"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Margin="16,20,16,16" />
+
+                <!-- Primary Navigation Options -->
+                <StackPanel Grid.Row="1" Spacing="4" Margin="8,0">
+                    <Button Content="🔑 All Passwords"
+                            Command="{Binding ShowAllPasswordsCommand}"
+                            Classes="Tertiary"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" />
+
+                    <Button Content="💾 Manage Backups"
+                            Command="{Binding ShowManageBackupsCommand}"
+                            Classes="Tertiary"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" />
+
+                    <Button Content="🔐 Change Password"
+                            Command="{Binding ShowChangeMasterPasswordCommand}"
+                            Classes="Tertiary"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" />
+                </StackPanel>
+
+                <!-- Logout / Lock Vault Action -->
+                <StackPanel Grid.Row="2" Margin="8,16">
+                    <Button Content="🔒 Logout"
+                            Command="{Binding LockVaultCommand}"
+                            Classes="Danger Solid"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </SplitView.Pane>
+
+        <!-- Right Main Sub-Page Content Area -->
+        <SplitView.Content>
+            <Border Padding="20">
+                <ContentControl Content="{Binding CurrentSubPage}" />
+            </Border>
+        </SplitView.Content>
+    </SplitView>
 </UserControl>

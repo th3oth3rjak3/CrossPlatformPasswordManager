@@ -27,29 +27,66 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
+    //public override void OnFrameworkInitializationCompleted()
+    //{
+    //    var serviceCollection = new ServiceCollection();
+    //    ConfigureServices(serviceCollection);
+    //    Services = serviceCollection.BuildServiceProvider();
+
+    //    MigrateDatabase(Services);
+    //    var session = LoadVaultSession(Services);
+    //    Services.GetRequiredService<VaultSession>().Effect(state =>
+    //    {
+    //        state.CopyFrom(session);
+    //    });
+
+    //    if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+    //    {
+    //        desktop.MainWindow = new MainWindow
+    //        {
+    //            DataContext = Services.GetRequiredService<MainViewModel>()
+    //        };
+    //    }
+
+    //    base.OnFrameworkInitializationCompleted();
+    //}
+
     public override void OnFrameworkInitializationCompleted()
     {
-        var serviceCollection = new ServiceCollection();
-        ConfigureServices(serviceCollection);
-        Services = serviceCollection.BuildServiceProvider();
-
-        MigrateDatabase(Services);
-        var session = LoadVaultSession(Services);
-        Services.GetRequiredService<VaultSession>().Effect(state =>
+        try
         {
-            state.CopyFrom(session);
-        });
+            Debug.WriteLine("[STARTUP] 1. Initializing DI Services...");
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+            Services = serviceCollection.BuildServiceProvider();
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var idleTimerService = Services.GetRequiredService<IdleTimerService>();
-            desktop.MainWindow = new MainWindow(idleTimerService)
+            Debug.WriteLine("[STARTUP] 2. Migrating Database...");
+            MigrateDatabase(Services);
+
+            Debug.WriteLine("[STARTUP] 3. Loading Vault Session...");
+            var session = LoadVaultSession(Services);
+            Services.GetRequiredService<VaultSession>().Effect(state =>
             {
-                DataContext = Services.GetRequiredService<MainViewModel>()
-            };
-        }
+                state.CopyFrom(session);
+            });
 
-        base.OnFrameworkInitializationCompleted();
+            Debug.WriteLine("[STARTUP] 4. Resolving MainViewModel...");
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow = new MainWindow
+                {
+                    DataContext = Services.GetRequiredService<MainViewModel>()
+                };
+            }
+
+            Debug.WriteLine("[STARTUP] 5. Initialization Complete!");
+            base.OnFrameworkInitializationCompleted();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[CRITICAL STARTUP ERROR] {ex}");
+            throw;
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -77,6 +114,8 @@ public partial class App : Application
         services.AddTransient<UnlockVaultViewModel>();
         services.AddTransient<VaultViewModel>();
         services.AddTransient<StartupErrorViewModel>();
+        services.AddTransient<VaultEntriesViewModel>();
+        services.AddTransient<ManageBackupsViewModel>();
     }
 
     private static VaultSession LoadVaultSession(IServiceProvider services)

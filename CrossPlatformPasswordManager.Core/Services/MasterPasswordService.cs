@@ -8,8 +8,7 @@ namespace CrossPlatformPasswordManager.Core.Services;
 public class MasterPasswordService(
     IDbContextFactory<PasswordManagerContext> contextFactory,
     DatabaseConnectionManager connectionManager,
-    VaultSession vaultSession,
-    IAuthenticationService authService
+    VaultSession vaultSession
 )
 {
     public async Task<Result<Unit, Exception>> SetMasterPassword(string password) =>

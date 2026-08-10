@@ -11,7 +11,6 @@ namespace CrossPlatformPasswordManager.UI.ViewModels;
 public partial class SetMasterPasswordViewModel(
     MasterPasswordService masterPasswordService,
     INavigationService navigationService,
-    IdleTimerService idleTimerService,
     IAuthenticationService authService
 ) : ViewModelBase
 {
@@ -52,7 +51,6 @@ public partial class SetMasterPasswordViewModel(
                         return;
                     }
 
-                    idleTimerService.StartTimer();
                     navigationService.NavigateBasedOnVaultSessionState();
 
                 },

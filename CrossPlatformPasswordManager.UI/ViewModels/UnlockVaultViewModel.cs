@@ -1,16 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 using CrossPlatformPasswordManager.Core.Services;
 using CrossPlatformPasswordManager.UI.Services;
 
 namespace CrossPlatformPasswordManager.UI.ViewModels;
 
-public partial class UnlockVaultViewModel(IAuthenticationService authenticationService, INavigationService navigationService) : ViewModelBase
+public partial class UnlockVaultViewModel(
+    IAuthenticationService authenticationService,
+    INavigationService navigationService
+) : ViewModelBase
 {
-    [ObservableProperty] 
+    [ObservableProperty]
     public partial string MasterPassword { get; set; } = string.Empty;
-    
-    [ObservableProperty] 
+
+    [ObservableProperty]
     public partial string? ValidationMessage { get; set; }
 
     [RelayCommand]
@@ -23,12 +27,14 @@ public partial class UnlockVaultViewModel(IAuthenticationService authenticationS
             ValidationMessage = "Please enter your master password.";
             return;
         }
-        
+
         ValidationMessage = authenticationService.Login(MasterPassword);
 
-        if (string.IsNullOrEmpty(ValidationMessage))
+        if (!string.IsNullOrEmpty(ValidationMessage))
         {
-            navigationService.Navigate<VaultViewModel>();
+            return;
         }
+
+        navigationService.NavigateBasedOnVaultSessionState();
     }
 }

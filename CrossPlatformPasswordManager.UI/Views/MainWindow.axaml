@@ -5,9 +5,21 @@
         x:DataType="vm:MainViewModel"
         Title="Cross-Platform Password Manager"
         Width="800" Height="600"
+        MinWidth="800" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundBrush}">
 
-    <!-- Main View Host -->
-    <ContentControl Content="{Binding CurrentPage}" />
+    <Grid RowDefinitions="Auto, *">
+        <!-- Debug Timer Display Banner -->
+        <Border Grid.Row="0" Background="#2D2D2D" Padding="10">
+            <TextBlock Text="{Binding TimeRemainingText}" 
+                       Foreground="Yellow" 
+                       HorizontalAlignment="Center" 
+                       FontWeight="Bold" 
+                       FontSize="16" />
+        </Border>
+
+        <!-- Main View Host -->
+        <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" />
+    </Grid>
 </Window>

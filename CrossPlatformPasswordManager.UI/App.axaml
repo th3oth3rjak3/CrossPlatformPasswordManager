@@ -1,20 +1,13 @@
 ﻿<Application
     xmlns="https://github.com/avaloniaui"
+    xmlns:semi="https://irihi.tech/semi"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
     xmlns:views="using:CrossPlatformPasswordManager.UI.Views"
     x:Class="CrossPlatformPasswordManager.UI.App">
 
-    <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Themes/Colors.axaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Application.Resources>
-
+    <!-- Global ViewModel-to-View mappings -->
     <Application.DataTemplates>
-        <!-- Global ViewModel-to-View mappings -->
         <DataTemplate DataType="{x:Type vm:SetMasterPasswordViewModel}">
             <views:SetMasterPasswordView />
         </DataTemplate>
@@ -27,14 +20,22 @@
             <views:VaultView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:VaultEntriesViewModel}">
+            <views:VaultEntriesView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:ManageBackupsViewModel}">
+            <views:ManageBackupsView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:StartupErrorViewModel}">
             <views:StartupErrorView />
         </DataTemplate>
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme />
-        <StyleInclude Source="/Themes/Styles.axaml" />
+        <semi:SemiTheme />
+        <semi:DataGridSemiTheme />
     </Application.Styles>
 
 </Application>
