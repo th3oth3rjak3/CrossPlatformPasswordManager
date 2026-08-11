@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
+             xmlns:controls="using:CrossPlatformPasswordManager.UI.Controls"
              x:Class="CrossPlatformPasswordManager.UI.Views.ManageBackupsView"
              x:DataType="vm:ManageBackupsViewModel">
 
@@ -16,10 +17,11 @@
                            FontWeight="Bold"
                            VerticalAlignment="Center" />
 
-                <Button Grid.Column="1"
-                        Content="➕ Create Manual Backup"
-                        Classes="Primary Solid"
-                        Command="{Binding CreateBackupCommand}" />
+                <controls:IconButton Grid.Column="1"
+                                     Icon="Add" 
+                                     Text="Create Manual Backup" 
+                                     ButtonClass="Primary Solid" 
+                                     Command="{Binding CreateBackupCommand}" />
             </Grid>
 
             <!-- Backups DataGrid -->
@@ -41,7 +43,7 @@
                     <!-- File Name Column -->
                     <DataGridTextColumn Header="Backup File" 
                                         Binding="{Binding FileName}" 
-                                        Width="2*" />
+                                        Width="2.5*" />
 
                     <!-- Date Created Column -->
                     <DataGridTextColumn Header="Created At" 
@@ -51,7 +53,7 @@
                     <!-- File Size Column -->
                     <DataGridTextColumn Header="Size" 
                                         Binding="{Binding FormattedSize}" 
-                                        Width="1*" />
+                                        Width="0.6*" />
 
                     <!-- Action Column -->
                     <DataGridTemplateColumn Header="Actions" Width="Auto">
@@ -68,17 +70,17 @@
                                             HorizontalAlignment="Center" 
                                             VerticalAlignment="Center">
                                     
-                                    <Button Content="🔄 Restore"
-                                            Classes="Tertiary"
-                                            Padding="6,4"
-                                            ToolTip.Tip="Restore Database from this backup"
-                                            Command="{Binding RestoreCommand}" />
+                                    <controls:IconButton Icon="Restore" 
+                                                         ButtonClass="Tertiary"
+                                                         Padding="6,4"
+                                                         ToolTip="Restore Database from this backup"
+                                                         Command="{Binding RestoreCommand}" />
 
-                                    <Button Content="🗑️ Delete"
-                                            Classes="Danger Tertiary"
-                                            Padding="6,4"
-                                            ToolTip.Tip="Delete this backup file"
-                                            Command="{Binding DeleteCommand}" />
+                                    <controls:IconButton Icon="Delete"
+                                                         ButtonClass="Danger Tertiary"
+                                                         Padding="6,4"
+                                                         ToolTip="Delete this backup file"
+                                                         Command="{Binding DeleteCommand}" />
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

@@ -1,0 +1,51 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="CrossPlatformPasswordManager.UI.Controls.IconButton"
+    x:Name="Root">
+
+    <Button
+        x:Name="Button"
+        Command="{Binding Command, ElementName=Root}"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        HorizontalContentAlignment="Center"
+        VerticalContentAlignment="Center"
+        ToolTip.Tip="{Binding ToolTip, ElementName=Root}">
+
+        <Panel>
+
+            <!-- Icon only -->
+            <TextBlock
+                IsVisible="{Binding Text, ElementName=Root, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                Text="{Binding IconSource, ElementName=Root}"
+                FontFamily="NotoEmoji"
+                FontSize="{Binding IconSize, ElementName=Root}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
+
+            <!-- Icon + text -->
+            <StackPanel
+                IsVisible="{Binding Text, ElementName=Root, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Orientation="Horizontal"
+                Spacing="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+
+                <TextBlock
+                    Text="{Binding IconSource, ElementName=Root}"
+                    FontFamily="NotoEmoji"
+                    FontSize="{Binding IconSize, ElementName=Root}"
+                    VerticalAlignment="Center" />
+
+                <TextBlock
+                    Text="{Binding Text, ElementName=Root}"
+                    VerticalAlignment="Center" />
+
+            </StackPanel>
+
+        </Panel>
+
+    </Button>
+
+</UserControl>

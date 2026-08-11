@@ -47,4 +47,10 @@
         <semi:DataGridSemiTheme />
     </Application.Styles>
 
+    <Application.Resources>
+        <FontFamily x:Key="NotoEmoji">
+            avares://PasswordManager/Assets/#Noto Color Emoji
+        </FontFamily>
+    </Application.Resources>
+    
 </Application>

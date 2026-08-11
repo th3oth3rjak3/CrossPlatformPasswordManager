@@ -2,6 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:CrossPlatformPasswordManager.UI.ViewModels"
              x:Class="CrossPlatformPasswordManager.UI.Views.VaultView"
+             xmlns:controls="using:CrossPlatformPasswordManager.UI.Controls"
+             xmlns:models="using:CrossPlatformPasswordManager.UI.Models"
              x:DataType="vm:VaultViewModel">
 
     <SplitView IsPaneOpen="True" DisplayMode="Inline" OpenPaneLength="220">
@@ -19,32 +21,28 @@
 
                 <!-- Primary Navigation Options -->
                 <StackPanel Grid.Row="1" Spacing="4" Margin="8,0">
-                    <Button Content="🔑 All Passwords"
-                            Command="{Binding ShowAllPasswordsCommand}"
-                            Classes="Tertiary"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left" />
-
-                    <Button Content="💾 Manage Backups"
-                            Command="{Binding ShowManageBackupsCommand}"
-                            Classes="Tertiary"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left" />
-
-                    <Button Content="🔐 Change Password"
-                            Command="{Binding ShowChangeMasterPasswordCommand}"
-                            Classes="Tertiary"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left" />
+                    <controls:NavigationItem Icon="Key" 
+                                             Text="All Passwords" 
+                                             Command="{Binding ShowAllPasswordsCommand}"
+                                             ButtonClass="Tertiary" />
+                    
+                    <controls:NavigationItem Icon="Save" 
+                                             Text="Manage Backups" 
+                                             Command="{Binding ShowManageBackupsCommand}"
+                                             ButtonClass="Tertiary" />
+                    
+                    <controls:NavigationItem Icon="LockWithKey" 
+                                             Text="Change Password" 
+                                             Command="{Binding ShowChangeMasterPasswordCommand}"
+                                             ButtonClass="Tertiary" />
                 </StackPanel>
 
                 <!-- Logout / Lock Vault Action -->
                 <StackPanel Grid.Row="2" Margin="8,16">
-                    <Button Content="🔒 Logout"
-                            Command="{Binding LockVaultCommand}"
-                            Classes="Danger Solid"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center" />
+                    <controls:NavigationItem Icon="{x:Static models:AppIcon.Lock}"
+                                             Text="Logout"
+                                             Command="{Binding LockVaultCommand}"
+                                             ButtonClass="Danger Solid" />
                 </StackPanel>
             </Grid>
         </SplitView.Pane>
